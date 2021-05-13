@@ -1,0 +1,133 @@
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-image: url('../img/back.png');
+  background-size: 200%;
+  font-family: 'Bellota Text', cursive;
+  height: 100hv;  
+  font-size: 20px;
+}
+
+@media (min-width: 400px) {
+  body{
+    font-size: 14px;
+    justify-content: center;
+  }
+
+  .menu {
+    width: 100vw;
+  }
+}
+
+header{
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.menu {
+  background-color: rgb(77,6,6);
+  border-bottom: 3px solid darkorange;
+  box-shadow: -4px 3px 20px 8px chocolate;
+  border-bottom-style: inset;
+  position: fixed;
+  width: 100vw;
+  top: 0;
+}
+
+.menu ul{
+  display: flex;
+  justify-content: space-around;
+}
+
+.menu li {
+  list-style: none;
+  font-weight: bold;
+  font-size: 1.2em;
+}
+
+.menu a{
+  display: block;
+  padding: 10px 20px;
+}
+
+a {
+  color: rgb(251,176,59);
+  text-decoration: none;
+}
+
+.title,
+.sub-title {
+  color: rgb(251,176,59);
+  text-align: center;
+  margin: 10px;
+}
+
+.sub-title {
+  font-style: italic;
+  font-size: 4em;
+  font-family: 'Poppins', cursive;
+}
+
+
+.title {
+  margin: 20px;
+  font-size: 100px;
+  font-family: 'Poppins', cursive;
+}
+
+.O-titles h2{
+  font-family: 'Poppins', monospace;
+  text-align: center;
+  margin: 100px 360px;
+  font-size: 2.5em;
+  text-align: center;
+  color: beige;
+}
+
+.grid {
+  display: grid;
+  gap: 1em;
+}
+
+@media (min-width: 600px) {
+  .grid {
+    grid-template-columns: 400px 400px;
+    justify-content: center;
+    align-content: center;
+  }
+}
+
+.O-titles figure {
+  text-align: center;
+  font-family: 'Bellota Text', cursive;
+}
+
+.img-msc {
+  height: 200px;
+  width: 200px;
+  margin: 10px;
+  border-radius: 20px;
+}
+
+.grid a{
+  display: block;
+  padding: 10px 10px;
+}
+
+figcaption {
+  font-weight: bold;
+  margin-bottom: -15px;
+  font-size: 20px;
+  color:beige
+}
+
+ul li a:hover {
+	background: rgba(1, 17, 90, 0.877);
+	border-radius: 4px;
+}
