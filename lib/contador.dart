@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttercurso/home_page.dart';
 
 class ContadorPage extends StatelessWidget {
   const ContadorPage({Key? key}) : super(key: key);
@@ -32,6 +33,14 @@ class _HomePageState extends State<HomePage> {
       count++;
     });
   }
+
+  ButtonStyle buttonStyle = TextButton.styleFrom(
+      backgroundColor: const Color.fromARGB(255, 51, 51, 51),
+      fixedSize: const Size(60, 40),
+      foregroundColor: Colors.black,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.zero,
+      ));
 
   @override
   Widget build(BuildContext context) {
@@ -70,15 +79,7 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     TextButton(
                         onPressed: count == 0 ? null : decrement,
-                        style: TextButton.styleFrom(
-                          backgroundColor:
-                              const Color.fromARGB(255, 51, 51, 51),
-                          fixedSize: const Size(60, 40),
-                          foregroundColor: Colors.black,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.zero,
-                          ),
-                        ),
+                        style: buttonStyle,
                         child: const Text(
                           'Saiu',
                         )),
@@ -87,18 +88,30 @@ class _HomePageState extends State<HomePage> {
                     ),
                     TextButton(
                       onPressed: count == 20 ? null : increment,
-                      style: TextButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 51, 51, 51),
-                        fixedSize: const Size(60, 40),
-                        foregroundColor: Colors.black,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.zero,
-                        ),
-                      ),
+                      style: buttonStyle,
                       child: const Text('Entrou'),
                     ),
                   ],
-                )
+                ),
+                const SizedBox(
+                  height: 100,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      alignment: Alignment.center,
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: ((context) => const AppHomePage())));
+                        },
+                        style: buttonStyle,
+                        child: const Text('Voltar'),
+                      ),
+                    ),
+                  ],
+                ),
               ],
             )));
   }
