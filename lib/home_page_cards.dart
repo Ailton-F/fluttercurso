@@ -1,20 +1,17 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:fluttercurso/contador.dart';
 
 class CaroulItems {
-  static Widget? ctCard;
-
   static final List<Widget> items = [
-    // TENTANDO ADICIONAR COMPONENTES EM UMA LISTA
-    // if (Widget) ctCard = ContadorCard.contadorCard else ;
+    //ignore prefer_const_constructor 
+    ContadorCard(),
   ];
-  
 }
 
-abstract class ContadorCard extends StatelessWidget {
+class ContadorCard extends StatelessWidget {
   const ContadorCard({super.key});
-  static final Widget? contadorCard;
-
   @override
   Widget build(BuildContext context) {
     Widget contadorCard = Card(

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:fluttercurso/contador.dart';
+import 'package:fluttercurso/home_page_cards.dart';
+// ignore: depend_on_referenced_packages
 import 'package:carousel_slider/carousel_slider.dart';
+// import 'package:fluttercurso/contador.dart';
 
 class AppHomePage extends StatelessWidget {
   const AppHomePage({super.key});
@@ -48,22 +50,20 @@ class _HomePageState extends State<HomePage> {
             enableInfiniteScroll: false,
             enlargeCenterPage: true,
           ),
-          items: [1,2,3,4,5].map((i) {
+          items: CaroulItems.items.map((i) {
             return Builder(
               builder: (BuildContext context) {
                 return Container(
                   width: MediaQuery.of(context).size.width,
                   margin: const EdgeInsets.symmetric(horizontal: 5.0),
                   // ignore: prefer_const_constructors
-                  decoration: BoxDecoration(
-                  ),
-                  child: null,
+                  decoration: BoxDecoration(),
+                  child: i,
                 );
               },
             );
           }).toList(),
         ),
-       
       ),
     );
   }
