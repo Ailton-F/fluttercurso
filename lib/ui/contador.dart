@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:fluttercurso/home_page.dart';
+import 'home_page.dart';
 
 class ContadorPage extends StatelessWidget {
   const ContadorPage({Key? key}) : super(key: key);

@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttercurso/home_page.dart';
+import 'home_page.dart';
 
 
 class LoginPage extends StatelessWidget {
@@ -96,6 +96,13 @@ class _HomePageState extends State<HomePage> {
                   height: 50,
                 ),
                 ElevatedButton(
+                    style: ButtonStyle(
+                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                        const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero,
+                        )
+                      )
+                    ),
                     onPressed: () {
                       validUser(usernameController, passwordController);
                       validUserState == false

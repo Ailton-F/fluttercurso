@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:fluttercurso/home_page_cards.dart';
 // ignore: depend_on_referenced_packages
-import 'package:carousel_slider/carousel_slider.dart';
 // import 'package:fluttercurso/contador.dart';
+import 'package:flutter/material.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import 'home_page_cards.dart';
 
 class AppHomePage extends StatelessWidget {
   const AppHomePage({super.key});
