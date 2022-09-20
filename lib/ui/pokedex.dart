@@ -27,10 +27,13 @@ class _PokedexState extends State<Pokedex> {
   //Controlador para o filtro
   TextEditingController searchController = TextEditingController();
 
+  //Retorna a url para o sprite dos pokemons
   Future _getPokemonsSprite(int pokeId) async {
     http.Response res;
+
     res = await http.get(Uri.parse(
         'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$pokeId.png'));
+    return res;
   }
 
   //Retorna todos os pokemon
@@ -54,15 +57,27 @@ class _PokedexState extends State<Pokedex> {
     return ListView.builder(
       itemCount: snapshot.data['results'].length,
       itemBuilder: (context, index) {
-        int pokeId = index + 1;
+        Image? pokeSprite;
+
+        List<String> urlSplited =
+            snapshot.data['results'][index]['url'].split('/');
+        String pokeId = urlSplited[6];
+
+        try {
+          pokeSprite = Image.network(
+              'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$pokeId.png');
+        } catch (e) {
+          print('Caiu aqui');
+          pokeSprite = Image.network(
+              'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png');
+        }
+
         String name = snapshot.data['results'][index]['name'];
         String nameStr = name.replaceAll(RegExp(r'-'), ' ').toCapitalized();
         return GestureDetector(
             child: Row(
           children: [
-            Image.network(
-              'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$pokeId.png'
-            ),
+            pokeSprite,
             Text(
               nameStr,
               style: const TextStyle(color: Colors.white),
