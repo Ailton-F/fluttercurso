@@ -10,7 +10,9 @@ class PokedexPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: const Pokedex(),
-      theme: ThemeData(hintColor: Colors.white),
+      theme: ThemeData().copyWith(
+          colorScheme: ThemeData().colorScheme.copyWith(primary: Colors.white),
+          errorColor: Colors.red),
       debugShowCheckedModeBanner: false,
     );
   }
@@ -25,22 +27,17 @@ class Pokedex extends StatefulWidget {
 
 class _PokedexState extends State<Pokedex> {
   //Controlador para o filtro
-  TextEditingController searchController = TextEditingController();
+  TextEditingController _searchController = TextEditingController();
+  ScrollController _scrollController = ScrollController();
+  int _currentMax = 6;
+  int _offset = 0;
 
-  //Retorna a url para o sprite dos pokemons
-  Future _getPokemonsSprite(int pokeId) async {
+  //Retorna todos os pokemon
+  Future<Map> _getAllPokemons({int offset = 0, int limit = 1154}) async {
     http.Response res;
 
     res = await http.get(Uri.parse(
-        'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$pokeId.png'));
-    return res;
-  }
-
-  //Retorna todos os pokemon
-  Future<Map> _getAllPokemons() async {
-    http.Response res;
-    res = await http.get(
-        Uri.parse('https://pokeapi.co/api/v2/pokemon?offset=0&limit=1154'));
+        'https://pokeapi.co/api/v2/pokemon?offset=$offset&limit=$limit'));
     return json.decode(res.body);
   }
 
@@ -52,32 +49,53 @@ class _PokedexState extends State<Pokedex> {
     return json.decode(res.body);
   }
 
+  _getMoreContent() {
+    _getAllPokemons(offset: _currentMax, limit: _currentMax + 6);
+    print(_scrollController.position.maxScrollExtent);
+    _offset = _currentMax;
+    _currentMax += 6;
+
+    setState(() {});
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    Future<Map<dynamic, dynamic>> pokemon = _getAllPokemons(offset: 0, limit: 6);
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+        _getMoreContent();
+      }
+    });
+  }
+
   //Retorna a listView dos pokemons
   Widget _createPokemonListView(BuildContext context, AsyncSnapshot snapshot) {
     return ListView.builder(
+      controller: _scrollController,
       itemCount: snapshot.data['results'].length,
       itemBuilder: (context, index) {
-        Image? pokeSprite;
-
+        String? pokeId;
         List<String> urlSplited =
             snapshot.data['results'][index]['url'].split('/');
-        String pokeId = urlSplited[6];
-
-        try {
-          pokeSprite = Image.network(
-              'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$pokeId.png');
-        } catch (e) {
-          print('Caiu aqui');
-          pokeSprite = Image.network(
-              'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png');
-        }
+        pokeId = urlSplited[6];
 
         String name = snapshot.data['results'][index]['name'];
         String nameStr = name.replaceAll(RegExp(r'-'), ' ').toCapitalized();
         return GestureDetector(
             child: Row(
           children: [
-            pokeSprite,
+            Image.network(
+              'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$pokeId.png',
+              errorBuilder: (context, error, stackTrace) {
+                return Image.network(
+                    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png');
+              },
+            ),
+            const SizedBox(
+              width: 10,
+            ),
             Text(
               nameStr,
               style: const TextStyle(color: Colors.white),
@@ -87,20 +105,6 @@ class _PokedexState extends State<Pokedex> {
       },
     );
   }
-
-  // @override
-  // void initState() {
-  //   super.initState();
-
-  //   _getAllPokemons().then((map) {
-  //     print(map['results'].length);
-  //     map['results'].forEach((i) {
-  //       String name = i['name'];
-  //       String nameStr = name.replaceAll(RegExp(r'-'), ' ').toCapitalized();
-  //       // print(nameStr);
-  //     });
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -117,10 +121,16 @@ class _PokedexState extends State<Pokedex> {
         elevation: 0.0,
       ),
       body: Padding(
-        padding: EdgeInsets.fromLTRB(16, 64, 16, 32),
+        padding: const EdgeInsets.fromLTRB(16, 64, 16, 32),
         child: Column(children: <Widget>[
           TextFormField(
             decoration: InputDecoration(
+              enabledBorder: const OutlineInputBorder(
+                borderRadius: BorderRadius.zero,
+                borderSide: BorderSide(
+                  color: Colors.white,
+                ),
+              ),
               border: const OutlineInputBorder(),
               labelText: 'search',
               labelStyle: const TextStyle(color: Colors.white),
@@ -134,25 +144,21 @@ class _PokedexState extends State<Pokedex> {
               color: Colors.white,
             ),
           ),
-          const SizedBox(
-            height: 30,
-          ),
           Expanded(
               child: FutureBuilder(
-                  future: _getAllPokemons(),
+                  future: _getAllPokemons(offset: 0, limit: _currentMax),
                   builder: (context, snapshot) {
                     switch (snapshot.connectionState) {
-                      case ConnectionState.waiting:
-                      case ConnectionState.none:
-                        return Container(
-                          width: 200.0,
-                          height: 200.0,
-                          alignment: Alignment.center,
-                          child: const LinearProgressIndicator(
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.red),
-                          ),
-                        );
+                      // case ConnectionState.waiting:
+                      //   return Container(
+                      //     width: 200.0,
+                      //     height: 200.0,
+                      //     alignment: Alignment.center,
+                      //     child: const LinearProgressIndicator(
+                      //       valueColor:
+                      //           AlwaysStoppedAnimation<Color>(Colors.red),
+                      //     ),
+                      //   );
                       default:
                         if (snapshot.hasError) {
                           return Container();
@@ -160,8 +166,11 @@ class _PokedexState extends State<Pokedex> {
                           return _createPokemonListView(context, snapshot);
                         }
                     }
-                  }))
-        ]),
+                  }
+                )
+              )
+          ]
+        ),
       ),
     );
   }
