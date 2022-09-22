@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import '../extensions.dart';
 import 'package:http/http.dart' as http;
 
@@ -27,8 +28,9 @@ class Pokedex extends StatefulWidget {
 
 class _PokedexState extends State<Pokedex> {
   //Controlador para o filtro
-  TextEditingController _searchController = TextEditingController();
-  ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  String? _search;
   int _currentMax = 6;
   int _offset = 0;
 
@@ -38,12 +40,14 @@ class _PokedexState extends State<Pokedex> {
 
     res = await http.get(Uri.parse(
         'https://pokeapi.co/api/v2/pokemon?offset=$offset&limit=$limit'));
+
     return json.decode(res.body);
   }
 
   //Retorna todas as versões dos jogos de pokemon
   Future<Map> _getVersions() async {
     http.Response res;
+
     res = await http.get(
         Uri.parse('https://pokeapi.co/api/v2/version-group?offset=0&limit=24'));
     return json.decode(res.body);
@@ -62,27 +66,40 @@ class _PokedexState extends State<Pokedex> {
   void initState() {
     super.initState();
 
-    Future<Map<dynamic, dynamic>> pokemon = _getAllPokemons(offset: 0, limit: 6);
+    Future<Map<dynamic, dynamic>> pokemon =
+        _getAllPokemons(offset: 0, limit: 6);
     _scrollController.addListener(() {
-      if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+      if (_scrollController.position.pixels ==
+          _scrollController.position.maxScrollExtent) {
         _getMoreContent();
       }
     });
   }
 
+  Widget _createPokemonListViewSearch(BuildContext context, AsyncSnapshot snapshot) {
+    return Container();
+  }
+
   //Retorna a listView dos pokemons
   Widget _createPokemonListView(BuildContext context, AsyncSnapshot snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting && _offset == 0) {
+      return Container(
+        alignment: Alignment.center,
+        child: LinearProgressIndicator(),
+      );
+    }
+
+    int contentLenght = snapshot.data['results'].length;
     return ListView.builder(
       controller: _scrollController,
-      itemCount: snapshot.data['results'].length,
+      itemCount: contentLenght,
       itemBuilder: (context, index) {
-        String? pokeId;
         List<String> urlSplited =
             snapshot.data['results'][index]['url'].split('/');
-        pokeId = urlSplited[6];
-
+        String pokeId = urlSplited[6];
         String name = snapshot.data['results'][index]['name'];
         String nameStr = name.replaceAll(RegExp(r'-'), ' ').toCapitalized();
+
         return GestureDetector(
             child: Row(
           children: [
@@ -91,6 +108,15 @@ class _PokedexState extends State<Pokedex> {
               errorBuilder: (context, error, stackTrace) {
                 return Image.network(
                     'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png');
+              },
+              loadingBuilder: (context, error, stackTrace) {
+                if (stackTrace == null) return error;
+                return Container(
+                  alignment: Alignment.center,
+                  child: const CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation(Colors.white),
+                  ),
+                );
               },
             ),
             const SizedBox(
@@ -123,7 +149,12 @@ class _PokedexState extends State<Pokedex> {
       body: Padding(
         padding: const EdgeInsets.fromLTRB(16, 64, 16, 32),
         child: Column(children: <Widget>[
-          TextFormField(
+          TextField(
+            onSubmitted: (text) {
+              setState(() {
+                _search = text;
+              });
+            },
             decoration: InputDecoration(
               enabledBorder: const OutlineInputBorder(
                 borderRadius: BorderRadius.zero,
@@ -148,29 +179,13 @@ class _PokedexState extends State<Pokedex> {
               child: FutureBuilder(
                   future: _getAllPokemons(offset: 0, limit: _currentMax),
                   builder: (context, snapshot) {
-                    switch (snapshot.connectionState) {
-                      // case ConnectionState.waiting:
-                      //   return Container(
-                      //     width: 200.0,
-                      //     height: 200.0,
-                      //     alignment: Alignment.center,
-                      //     child: const LinearProgressIndicator(
-                      //       valueColor:
-                      //           AlwaysStoppedAnimation<Color>(Colors.red),
-                      //     ),
-                      //   );
-                      default:
-                        if (snapshot.hasError) {
-                          return Container();
-                        } else {
-                          return _createPokemonListView(context, snapshot);
-                        }
+                    if (snapshot.hasError) {
+                      return Container();
+                    } else {
+                      return _createPokemonListView(context, snapshot);
                     }
-                  }
-                )
-              )
-          ]
-        ),
+                  }))
+        ]),
       ),
     );
   }
