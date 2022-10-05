@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import '../extensions.dart';
 import 'package:http/http.dart' as http;
+
+import 'home_page.dart';
 
 class PokedexPage extends StatelessWidget {
   const PokedexPage({super.key});
@@ -53,9 +54,16 @@ class _PokedexState extends State<Pokedex> {
     return json.decode(res.body);
   }
 
+  //Retorna um pokémon específico
+  Future<Map> _getPokemon(String? poke) async {
+    http.Response res;
+    res = await http.get(Uri.parse('​https://pokeapi.co/api/v2/pokemon/ditto'));
+    print(res);
+    return json.decode(res.body);
+  }
+
   _getMoreContent() {
     _getAllPokemons(offset: _currentMax, limit: _currentMax + 6);
-    print(_scrollController.position.maxScrollExtent);
     _offset = _currentMax;
     _currentMax += 6;
 
@@ -65,27 +73,26 @@ class _PokedexState extends State<Pokedex> {
   @override
   void initState() {
     super.initState();
-
-    Future<Map<dynamic, dynamic>> pokemon =
-        _getAllPokemons(offset: 0, limit: 6);
-    _scrollController.addListener(() {
-      if (_scrollController.position.pixels ==
-          _scrollController.position.maxScrollExtent) {
-        _getMoreContent();
-      }
-    });
-  }
-
-  Widget _createPokemonListViewSearch(BuildContext context, AsyncSnapshot snapshot) {
-    return Container();
+    if (_search == null) {
+      Future<Map<dynamic, dynamic>> pokemon =
+          _getAllPokemons(offset: 0, limit: 6);
+      _scrollController.addListener(() {
+        if (_scrollController.position.pixels ==
+            _scrollController.position.maxScrollExtent) {
+          _getMoreContent();
+        }
+      });
+    }
   }
 
   //Retorna a listView dos pokemons
-  Widget _createPokemonListView(BuildContext context, AsyncSnapshot snapshot) {
+  Widget _createPokemonView(BuildContext context, AsyncSnapshot snapshot) {
+    if(_search != null) return Text(snapshot.data);
+    
     if (snapshot.connectionState == ConnectionState.waiting && _offset == 0) {
       return Container(
         alignment: Alignment.center,
-        child: LinearProgressIndicator(),
+        child: const LinearProgressIndicator(),
       );
     }
 
@@ -134,13 +141,30 @@ class _PokedexState extends State<Pokedex> {
 
   @override
   Widget build(BuildContext context) {
+    Future pokemon;
+    if (_search != null)
+      pokemon = _getPokemon(_search);
+    else
+      pokemon = _getAllPokemons(offset: 0, limit: _currentMax);
+
+    FutureBuilder futureBuilder = FutureBuilder(
+        // future: _getAllPokemons(offset: 0, limit: _currentMax),
+        future: pokemon,
+        builder: (context, snapshot) {
+          if (!snapshot.hasError) return _createPokemonView(context, snapshot);
+          return Container();
+        });
+
     return Scaffold(
       // const Color.fromARGB(255, 12, 9, 9)
       extendBodyBehindAppBar: true,
       backgroundColor: const Color.fromARGB(255, 12, 9, 9),
       appBar: AppBar(
         leading: IconButton(
-          onPressed: () {},
+          onPressed: () {
+            Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const HomePage()));
+          },
           icon: const Icon(Icons.arrow_back),
         ),
         backgroundColor: Colors.transparent,
@@ -156,6 +180,8 @@ class _PokedexState extends State<Pokedex> {
               });
             },
             decoration: InputDecoration(
+              contentPadding:
+                  EdgeInsets.all(MediaQuery.of(context).size.height / 50),
               enabledBorder: const OutlineInputBorder(
                 borderRadius: BorderRadius.zero,
                 borderSide: BorderSide(
@@ -175,16 +201,7 @@ class _PokedexState extends State<Pokedex> {
               color: Colors.white,
             ),
           ),
-          Expanded(
-              child: FutureBuilder(
-                  future: _getAllPokemons(offset: 0, limit: _currentMax),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasError) {
-                      return Container();
-                    } else {
-                      return _createPokemonListView(context, snapshot);
-                    }
-                  }))
+          Expanded(child: futureBuilder)
         ]),
       ),
     );
